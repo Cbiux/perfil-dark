@@ -35,15 +35,31 @@ body {
 @keyframes orb-float {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
   50% {
-    transform: translateY(-12px);
+    transform: translateY(-18px) scale(1.03);
+  }
+}
+
+@keyframes orb-glow {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.48;
+    transform: scale(1.08);
   }
 }
 
 .orb-float {
-  animation: orb-float 7s ease-in-out infinite;
+  animation: orb-float 8s ease-in-out infinite;
+}
+
+.orb-glow {
+  animation: orb-glow 6.5s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

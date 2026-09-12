@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Sebastián Ceciliano",
-  description: "Perfil de redes sociales — San José.",
+  description: "Founder @Zeek — Instagram, X, Telegram y más.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

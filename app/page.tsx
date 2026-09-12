@@ -1,38 +1,55 @@
 import { Orb } from "@/components/Orb";
 import { PosterMarks } from "@/components/PosterMarks";
+import { QuickSocials } from "@/components/QuickSocials";
+import { ShareButton } from "@/components/ShareButton";
 import { SocialGrid } from "@/components/SocialGrid";
-import { profile, socials } from "@/data/profile";
+import { getContent } from "@/lib/content";
+import Link from "next/link";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const content = await getContent();
+
   return (
     <div className="relative min-h-full overflow-hidden bg-background">
       <PosterMarks />
-      <div className="pointer-events-none absolute -bottom-28 -left-24 sm:-bottom-40 sm:-left-16">
-        <Orb size={420} className="opacity-90 sm:opacity-100" />
+      <div className="pointer-events-none absolute -bottom-36 -left-28 sm:-bottom-48 sm:-left-20">
+        <Orb size={520} className="opacity-95" />
       </div>
 
-      <main className="relative mx-auto flex min-h-full w-full max-w-3xl flex-col px-6 pb-28 pt-16 sm:px-10 sm:pt-20">
-        <p className="text-sm tracking-wide text-muted">San José Workshop</p>
-        <h1 className="mt-3 max-w-xl text-4xl font-semibold tracking-tight text-white sm:text-6xl">
-          {profile.name}
-        </h1>
-        <p className="mt-3 text-xl text-muted sm:text-2xl">
-          {profile.location} · {profile.headline}
-        </p>
+      <div className="absolute top-6 right-6 z-20 sm:top-8 sm:right-24">
+        <ShareButton title={content.name} />
+      </div>
 
-        <div className="mt-10 flex items-center gap-5">
-          <Orb size={92} />
-          <p className="max-w-sm text-base leading-7 text-muted">{profile.bio}</p>
+      <main className="relative mx-auto flex min-h-full w-full max-w-md flex-col items-center px-6 pb-24 pt-16 text-center sm:pt-20">
+        <div className="relative">
+          <div className="absolute -inset-3 rounded-full bg-accent/20 blur-xl" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={content.photo}
+            alt={content.name}
+            width={112}
+            height={112}
+            className="relative h-28 w-28 rounded-full object-cover ring-2 ring-white/80"
+          />
         </div>
 
-        <h2 className="sr-only">Redes sociales</h2>
-        <SocialGrid socials={socials} />
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight text-white sm:text-[28px]">
+          {content.name}
+        </h1>
+        <p className="mt-1 text-sm text-muted">{content.headline}</p>
 
-        <p className="relative z-10 mt-16 text-sm text-muted">
-          {profile.headline} · placeholders en{" "}
-          <code className="text-accent">data/profile.ts</code>
-        </p>
+        <QuickSocials socials={content.quickSocials} />
+        <SocialGrid links={content.links} />
       </main>
+
+      <Link
+        href="/admin"
+        className="absolute bottom-4 right-5 z-20 text-[11px] text-white/20 transition-colors hover:text-accent"
+      >
+        Admin
+      </Link>
     </div>
   );
 }

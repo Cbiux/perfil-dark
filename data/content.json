@@ -1,0 +1,61 @@
+{
+  "name": "Sebastián Ceciliano",
+  "headline": "Founder @Zeek",
+  "handle": "cbiux",
+  "photo": "/sebastian.jpg",
+  "quickSocials": [
+    {
+      "id": "instagram",
+      "icon": "instagram",
+      "label": "Instagram",
+      "href": "https://instagram.com/jsebastian_04_"
+    },
+    {
+      "id": "x",
+      "icon": "x",
+      "label": "X",
+      "href": "https://x.com/Cbiux_04"
+    },
+    {
+      "id": "telegram",
+      "icon": "telegram",
+      "label": "Telegram",
+      "href": "https://t.me/cbiux"
+    },
+    {
+      "id": "whatsapp",
+      "icon": "whatsapp",
+      "label": "WhatsApp",
+      "href": "https://api.whatsapp.com/send?phone=50684358038"
+    }
+  ],
+  "links": [
+    {
+      "id": "linkedin",
+      "icon": "linkedin",
+      "label": "LinkedIn",
+      "href": "https://www.linkedin.com/in/cbiux"
+    },
+    {
+      "id": "github",
+      "icon": "github",
+      "label": "GitHub",
+      "href": "https://github.com/Cbiux"
+    },
+    {
+      "id": "zeek",
+      "icon": "community",
+      "label": "Zeek Community",
+      "subtitle": "WhatsApp Community · Free to join",
+      "href": "https://chat.whatsapp.com/DD9aCaSvCDEI7avYGZNVby",
+      "thumbnail": "/zeek.jpg"
+    },
+    {
+      "id": "calendly",
+      "icon": "calendly",
+      "label": "Platica conmigo!",
+      "subtitle": "Calendly · Sebasceciliano",
+      "href": "https://calendly.com/sebasceciliano/30min"
+    }
+  ]
+}

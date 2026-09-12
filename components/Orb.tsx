@@ -10,7 +10,7 @@ export function Orb({ className = "", size = 220 }: OrbProps) {
       style={{ width: size, height: size }}
       aria-hidden
     >
-      <div className="absolute -inset-8 rounded-full bg-accent/20 blur-3xl" />
+      <div className="orb-glow absolute -inset-8 rounded-full bg-accent/25 blur-3xl" />
       <div
         className="absolute inset-0 rounded-full shadow-[0_0_64px_rgba(30,212,176,0.22)]"
         style={{
