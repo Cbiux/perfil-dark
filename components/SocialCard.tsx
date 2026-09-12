@@ -1,5 +1,8 @@
+"use client";
+
 import type { SocialLink } from "@/data/profile";
-import { CardBody, cardClass } from "./CardBody";
+import { cardClass } from "@/lib/card-class";
+import { CardBody } from "./CardBody";
 
 export function SocialCard({ social }: { social: SocialLink }) {
   return (

@@ -1,0 +1,2 @@
+export const cardClass =
+  "group flex min-h-[76px] w-full items-center gap-4 rounded-2xl border border-white/12 bg-card px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/70 hover:shadow-[0_0_28px_rgba(30,212,176,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { SocialLink } from "@/data/profile";
 import { SocialIcon } from "./SocialIcon";
-import { cardClass } from "./CardBody";
+import { cardClass } from "@/lib/card-class";
 
 export function CopyCard({ social }: { social: SocialLink }) {
   const [copied, setCopied] = useState(false);
