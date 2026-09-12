@@ -13,4 +13,6 @@ Abre [http://localhost:3000](http://localhost:3000).
 
 ## Editar enlaces
 
-Los placeholders viven en [`data/profile.ts`](data/profile.ts): nombre, bio y URLs de cada red.
+Los datos viven en [`data/content.json`](data/content.json). El panel está en `/admin`.
+
+En local la contraseña por defecto es `cbiux`. En producción define `ADMIN_PASSWORD`.
