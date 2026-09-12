@@ -56,6 +56,13 @@
       "label": "Platica conmigo!",
       "subtitle": "Calendly · Sebasceciliano",
       "href": "https://calendly.com/sebasceciliano/30min"
+    },
+    {
+      "id": "india",
+      "icon": "suitcase",
+      "label": "Ayúdame a llegar a India",
+      "subtitle": "Mi maleta",
+      "href": "https://cbiux-suitcase.vercel.app"
     }
   ]
 }

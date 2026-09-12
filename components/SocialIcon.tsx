@@ -69,6 +69,14 @@ export function SocialIcon({
           />
         </svg>
       );
+    case "suitcase":
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden>
+          <rect x="3.5" y="8" width="17" height="12.5" rx="2.2" stroke="currentColor" strokeWidth="1.7" />
+          <path d="M9 8V6.2A2.2 2.2 0 0 1 11.2 4h1.6A2.2 2.2 0 0 1 15 6.2V8" stroke="currentColor" strokeWidth="1.7" />
+          <path d="M3.5 13h17" stroke="currentColor" strokeWidth="1.7" />
+        </svg>
+      );
     default:
       return (
         <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden>

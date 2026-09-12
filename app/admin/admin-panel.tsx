@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { logoutAdmin, saveSiteContent } from "@/app/actions";
+import { logoutAdmin, saveSiteContent, uploadProfilePhoto } from "@/app/actions";
 import { ICON_OPTIONS, type IconName, type ProfileLink, type QuickSocial, type SiteContent } from "@/lib/types";
 
 const fieldClass =
@@ -15,6 +15,7 @@ export function AdminPanel({ initial }: { initial: SiteContent }) {
   const [content, setContent] = useState(initial);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   function updateLink(id: string, patch: Partial<ProfileLink>) {
     setContent((prev) => ({
@@ -42,6 +43,29 @@ export function AdminPanel({ initial }: { initial: SiteContent }) {
       setStatus("No se pudo guardar. Revisa permisos o corre esto en local.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function onPhoto(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    setStatus("");
+    try {
+      let payload: File;
+      try {
+        payload = await compressPhoto(file);
+      } catch {
+        payload = file;
+      }
+      const data = new FormData();
+      data.set("photo", payload, payload.name || "profile.jpg");
+      const result = await uploadProfilePhoto(data);
+      setContent((prev) => ({ ...prev, photo: result.url }));
+      setStatus("Foto actualizada");
+    } catch {
+      setStatus("No se pudo subir la foto.");
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -79,12 +103,31 @@ export function AdminPanel({ initial }: { initial: SiteContent }) {
           onChange={(e) => setContent({ ...content, handle: e.target.value })}
           placeholder="Handle"
         />
-        <input
-          className={fieldClass}
-          value={content.photo}
-          onChange={(e) => setContent({ ...content, photo: e.target.value })}
-          placeholder="Foto (URL o /sebastian.jpg)"
-        />
+        <div className="flex items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={content.photo}
+            alt={content.name}
+            className="h-20 w-20 rounded-full object-cover ring-2 ring-white/80"
+          />
+          <label className="cursor-pointer text-sm text-accent hover:text-white">
+            {uploading ? "Subiendo…" : "Cambiar foto"}
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              disabled={uploading}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                void onPhoto(file);
+              }}
+            />
+          </label>
+        </div>
+        <p className="text-xs text-muted">
+          Sube la foto que quieras. Se verá en el perfil y al abrirla en grande.
+        </p>
       </section>
 
       <section className="space-y-3 rounded-2xl border border-white/12 bg-card p-4">
@@ -232,4 +275,42 @@ export function AdminPanel({ initial }: { initial: SiteContent }) {
       {status ? <p className="text-center text-sm text-muted">{status}</p> : null}
     </div>
   );
+}
+
+function compressPhoto(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    image.onload = () => {
+      const max = 1400;
+      const scale = Math.min(1, max / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      const context = canvas.getContext("2d");
+      if (!context) {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("No se pudo procesar la foto"));
+        return;
+      }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(objectUrl);
+          if (!blob) {
+            reject(new Error("No se pudo comprimir la foto"));
+            return;
+          }
+          resolve(new File([blob], "profile.jpg", { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        0.88,
+      );
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("No se pudo leer la foto"));
+    };
+    image.src = objectUrl;
+  });
 }

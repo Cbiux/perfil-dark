@@ -8,7 +8,8 @@ import {
   isAdmin,
   setAdminCookie,
 } from "@/lib/admin";
-import { saveContent } from "@/lib/content";
+import { getContent, saveContent } from "@/lib/content";
+import { storeProfilePhoto } from "@/lib/photo";
 import type { SiteContent } from "@/lib/types";
 
 export async function loginAdmin(formData: FormData) {
@@ -37,4 +38,28 @@ export async function saveSiteContent(content: SiteContent) {
   }
   revalidatePath("/");
   revalidatePath("/admin");
+}
+
+export async function uploadProfilePhoto(formData: FormData) {
+  if (!(await isAdmin())) {
+    throw new Error("No autorizado");
+  }
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("Elige una foto");
+  }
+  if (!file.type.startsWith("image/")) {
+    throw new Error("El archivo tiene que ser una imagen");
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    throw new Error("La foto es muy pesada (máx. 8 MB)");
+  }
+
+  const url = await storeProfilePhoto(file);
+  const content = await getContent();
+  content.photo = url;
+  await saveContent(content);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return { url };
 }

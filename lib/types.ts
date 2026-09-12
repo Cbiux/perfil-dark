@@ -7,6 +7,7 @@ export type IconName =
   | "github"
   | "calendly"
   | "community"
+  | "suitcase"
   | "link";
 
 export type QuickSocial = {
@@ -43,5 +44,6 @@ export const ICON_OPTIONS: IconName[] = [
   "github",
   "calendly",
   "community",
+  "suitcase",
   "link",
 ];
