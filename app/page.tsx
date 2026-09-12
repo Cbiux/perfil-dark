@@ -1,4 +1,5 @@
 import { GrokScene } from "@/components/GrokScene";
+import { ProfilePhoto } from "@/components/ProfilePhoto";
 import { QuickSocials } from "@/components/QuickSocials";
 import { ShareButton } from "@/components/ShareButton";
 import { SocialGrid } from "@/components/SocialGrid";
@@ -18,17 +19,7 @@ export default async function Home() {
       </div>
 
       <main className="relative mx-auto flex min-h-full w-full max-w-md flex-col items-center px-6 pb-24 pt-16 text-center sm:pt-20">
-        <div className="relative">
-          <div className="absolute -inset-3 rounded-full bg-accent/20 blur-xl" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={content.photo}
-            alt={content.name}
-            width={112}
-            height={112}
-            className="relative h-28 w-28 rounded-full object-cover ring-2 ring-white/80"
-          />
-        </div>
+        <ProfilePhoto src={content.photo} alt={content.name} />
 
         <h1 className="mt-5 text-2xl font-semibold tracking-tight text-white sm:text-[28px]">
           {content.name}
