@@ -1,4 +1,4 @@
-import { Orb } from "@/components/Orb";
+import { GrokScene } from "@/components/GrokScene";
 import { PosterMarks } from "@/components/PosterMarks";
 import { QuickSocials } from "@/components/QuickSocials";
 import { ShareButton } from "@/components/ShareButton";
@@ -14,10 +14,7 @@ export default async function Home() {
   return (
     <div className="relative min-h-full overflow-hidden bg-background">
       <PosterMarks />
-      <div className="pointer-events-none absolute -bottom-36 -left-28 sm:-bottom-48 sm:-left-20">
-        <Orb size={520} className="opacity-95" />
-      </div>
-
+      <GrokScene />
       <div className="absolute top-6 right-6 z-20 sm:top-8 sm:right-24">
         <ShareButton title={content.name} />
       </div>

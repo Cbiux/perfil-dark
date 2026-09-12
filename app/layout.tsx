@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sebastian-ceciliano.vercel.app"),
   title: "Sebastián Ceciliano",
   description: "Founder @Zeek — Instagram, X, Telegram y más.",
 };
