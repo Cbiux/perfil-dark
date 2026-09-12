@@ -12,7 +12,7 @@ export default async function Home() {
   const content = await getContent();
 
   return (
-    <div className="relative min-h-full overflow-hidden bg-background">
+    <div className="relative min-h-full bg-background">
       <PosterMarks />
       <GrokScene />
       <div className="absolute top-6 right-6 z-20 sm:top-8 sm:right-24">

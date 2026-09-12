@@ -27,63 +27,9 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-.grok-cursor-page,
-.grok-cursor-page a,
-.grok-cursor-page button,
-.grok-cursor-page [role="button"] {
-  cursor: none;
-}
-
-.grok-cursor {
-  will-change: transform;
-}
-
 ::selection {
   background: color-mix(in srgb, var(--accent) 35%, black);
   color: var(--foreground);
-}
-
-@keyframes orb-float {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-18px) scale(1.03);
-  }
-}
-
-@keyframes orb-glow {
-  0%,
-  100% {
-    opacity: 0.22;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.48;
-    transform: scale(1.08);
-  }
-}
-
-.orb-float {
-  animation: orb-float 8s ease-in-out infinite;
-}
-
-.orb-glow {
-  animation: orb-glow 6.5s ease-in-out infinite;
-}
-
-@media (pointer: coarse), (prefers-reduced-motion: reduce) {
-  .grok-cursor-page,
-  .grok-cursor-page a,
-  .grok-cursor-page button,
-  .grok-cursor-page [role="button"] {
-    cursor: auto;
-  }
-
-  .grok-cursor {
-    display: none !important;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
