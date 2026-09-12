@@ -1,7 +1,6 @@
-import { CopyCard } from "@/components/CopyCard";
 import { Orb } from "@/components/Orb";
 import { PosterMarks } from "@/components/PosterMarks";
-import { SocialCard } from "@/components/SocialCard";
+import { SocialGrid } from "@/components/SocialGrid";
 import { profile, socials } from "@/data/profile";
 
 export default function Home() {
@@ -27,15 +26,7 @@ export default function Home() {
         </div>
 
         <h2 className="sr-only">Redes sociales</h2>
-        <section className="relative z-10 mt-12 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {socials.map((social) =>
-            social.action === "copy" ? (
-              <CopyCard key={social.id} social={social} />
-            ) : (
-              <SocialCard key={social.id} social={social} />
-            ),
-          )}
-        </section>
+        <SocialGrid socials={socials} />
 
         <p className="relative z-10 mt-16 text-sm text-muted">
           {profile.headline} · placeholders en{" "}
