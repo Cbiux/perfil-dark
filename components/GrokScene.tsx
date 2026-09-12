@@ -9,22 +9,45 @@ const DAMPING = 0.8;
 const OFFSET_X = 92;
 const OFFSET_Y = 68;
 const GAP = 36;
-const GYRO_ACCEL = 0.62;
+const GYRO_ACCEL = 0.72;
 const FRICTION = 0.986;
 const RESTITUTION = 0.76;
 const MAX_SPEED = 22;
 
-type OrientationEventCtor = {
+type PermissionedSensor = {
   requestPermission?: () => Promise<"granted" | "denied">;
 };
+
+function isMobilePet() {
+  const ua = navigator.userAgent || "";
+  if (/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)) {
+    return true;
+  }
+  if (/iPad/i.test(ua)) return true;
+  if (navigator.maxTouchPoints > 1 && /MacIntel/.test(navigator.platform)) {
+    return true;
+  }
+  if (
+    navigator.maxTouchPoints > 0 &&
+    window.matchMedia("(pointer: coarse)").matches
+  ) {
+    return true;
+  }
+  return window.matchMedia("(hover: none)").matches;
+}
+
+function needsMotionPrompt() {
+  const orientation = DeviceOrientationEvent as unknown as PermissionedSensor;
+  const motion = DeviceMotionEvent as unknown as PermissionedSensor;
+  return (
+    typeof orientation.requestPermission === "function" ||
+    typeof motion.requestPermission === "function"
+  );
+}
 
 function petSizeForViewport(desktop: boolean) {
   if (!desktop) return 84;
   return window.matchMedia("(min-width: 768px)").matches ? 120 : 88;
-}
-
-function isDesktopPointer() {
-  return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -117,9 +140,7 @@ function screenAngle() {
   );
 }
 
-function tiltAccel(beta: number, gamma: number) {
-  let x = gamma / 32;
-  let y = (beta - 35) / 32;
+function remapTilt(x: number, y: number) {
   const angle = screenAngle();
   if (angle === 90) {
     const nextX = y;
@@ -133,22 +154,24 @@ function tiltAccel(beta: number, gamma: number) {
     x = -x;
     y = -y;
   }
-  return {
-    x: clamp(x, -1.8, 1.8),
-    y: clamp(y, -1.8, 1.8),
-  };
+  return { x: clamp(x, -1.8, 1.8), y: clamp(y, -1.8, 1.8) };
+}
+
+function tiltAccel(beta: number, gamma: number) {
+  return remapTilt(gamma / 32, (beta - 35) / 32);
 }
 
 async function requestMotionPermission() {
-  const orientation = DeviceOrientationEvent as unknown as OrientationEventCtor;
-  const motion = DeviceMotionEvent as unknown as OrientationEventCtor;
+  const motion = DeviceMotionEvent as unknown as PermissionedSensor;
+  const orientation = DeviceOrientationEvent as unknown as PermissionedSensor;
   try {
+    if (typeof motion.requestPermission === "function") {
+      const result = await motion.requestPermission();
+      if (result !== "granted") return false;
+    }
     if (typeof orientation.requestPermission === "function") {
       const result = await orientation.requestPermission();
       if (result !== "granted") return false;
-    }
-    if (typeof motion.requestPermission === "function") {
-      await motion.requestPermission();
     }
     return true;
   } catch {
@@ -159,17 +182,20 @@ async function requestMotionPermission() {
 export function GrokScene() {
   const [ready, setReady] = useState(false);
   const [desktop, setDesktop] = useState(true);
+  const [needsTap, setNeedsTap] = useState(false);
   const [size, setSize] = useState(88);
   const petRef = useRef<HTMLDivElement>(null);
   const botRef = useRef<HTMLDivElement>(null);
   const faceRef = useRef<HTMLDivElement>(null);
   const sphereRef = useRef<HTMLDivElement>(null);
   const eyesRef = useRef<HTMLDivElement>(null);
+  const enableMotionRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
-    const nextDesktop = isDesktopPointer();
-    setDesktop(nextDesktop);
-    setSize(petSizeForViewport(nextDesktop));
+    const mobile = isMobilePet();
+    setDesktop(!mobile);
+    setSize(petSizeForViewport(!mobile));
+    setNeedsTap(mobile && needsMotionPrompt());
     setReady(true);
   }, []);
 
@@ -178,7 +204,7 @@ export function GrokScene() {
     const pet = petRef.current;
     if (!pet) return;
 
-    let modeDesktop = isDesktopPointer();
+    let modeDesktop = !isMobilePet();
     let petSize = petSizeForViewport(modeDesktop);
     const mouse = {
       x: window.innerWidth / 2 + (modeDesktop ? 90 : 0),
@@ -196,9 +222,10 @@ export function GrokScene() {
           petSize / 2 + 14,
         )
       : { x: window.innerWidth / 2, y: window.innerHeight * 0.38 };
-    const vel = { x: modeDesktop ? 0 : 3.2, y: modeDesktop ? 0 : 2.4 };
+    const vel = { x: modeDesktop ? 0 : 2.6, y: modeDesktop ? 0 : 1.8 };
     const look = { x: 0.18, y: -0.08 };
     const tilt = { beta: 35, gamma: 0 };
+    const gravity = { x: 0, y: 0.2, fromMotion: false };
     let blink = 1;
     let bounce = 0;
     let spin = 0;
@@ -209,7 +236,7 @@ export function GrokScene() {
     let blinkTimer = 0;
     let cancelled = false;
     let gyroOn = false;
-    let askedMotion = false;
+    let sensorsBound = false;
 
     const scheduleBlink = () => {
       blinkTimer = window.setTimeout(() => {
@@ -307,12 +334,59 @@ export function GrokScene() {
       spin = clientX < pos.x ? -18 : 18;
     };
 
+    const onOrientation = (event: DeviceOrientationEvent) => {
+      if (modeDesktop) return;
+      if (typeof event.beta === "number") tilt.beta = event.beta;
+      if (typeof event.gamma === "number") tilt.gamma = event.gamma;
+      gyroOn = true;
+    };
+
+    const onMotion = (event: DeviceMotionEvent) => {
+      if (modeDesktop) return;
+      const g = event.accelerationIncludingGravity;
+      if (!g || g.x == null || g.y == null) return;
+      const mapped = remapTilt(g.x / 7, -g.y / 7);
+      gravity.x = mapped.x;
+      gravity.y = mapped.y;
+      gravity.fromMotion = true;
+      gyroOn = true;
+    };
+
+    const unbindSensors = () => {
+      window.removeEventListener("deviceorientation", onOrientation, true);
+      window.removeEventListener("devicemotion", onMotion, true);
+      sensorsBound = false;
+    };
+
+    const bindSensors = () => {
+      unbindSensors();
+      window.addEventListener("deviceorientation", onOrientation, true);
+      window.addEventListener("devicemotion", onMotion, true);
+      sensorsBound = true;
+    };
+
+    const enableMotion = async () => {
+      if (modeDesktop) return;
+      const ok = await requestMotionPermission();
+      bindSensors();
+      if (ok) {
+        gyroOn = true;
+        setNeedsTap(false);
+      }
+    };
+
+    enableMotionRef.current = enableMotion;
+
     const onResize = () => {
-      modeDesktop = isDesktopPointer();
+      modeDesktop = !isMobilePet();
       setDesktop(modeDesktop);
       petSize = petSizeForViewport(modeDesktop);
       setSize(petSize);
       pet.style.pointerEvents = modeDesktop ? "none" : "auto";
+      if (modeDesktop) {
+        setNeedsTap(false);
+        unbindSensors();
+      }
       shoveAway();
     };
 
@@ -329,25 +403,8 @@ export function GrokScene() {
       if (modeDesktop) return;
       event.preventDefault();
       event.stopPropagation();
-      void requestMotionPermission().then((ok) => {
-        if (ok) gyroOn = true;
-      });
       jump(event.clientX);
-    };
-
-    const onFirstTouch = () => {
-      if (modeDesktop || askedMotion) return;
-      askedMotion = true;
-      void requestMotionPermission().then((ok) => {
-        if (ok) gyroOn = true;
-      });
-    };
-
-    const onOrientation = (event: DeviceOrientationEvent) => {
-      if (modeDesktop) return;
-      if (typeof event.beta === "number") tilt.beta = event.beta;
-      if (typeof event.gamma === "number") tilt.gamma = event.gamma;
-      gyroOn = true;
+      void enableMotion();
     };
 
     const tick = (now: number) => {
@@ -413,7 +470,9 @@ export function GrokScene() {
         }
       } else {
         const accel = gyroOn
-          ? tiltAccel(tilt.beta, tilt.gamma)
+          ? gravity.fromMotion
+            ? { x: gravity.x, y: gravity.y }
+            : tiltAccel(tilt.beta, tilt.gamma)
           : { x: Math.sin(now / 1400) * 0.18, y: 0.22 };
         vel.x += accel.x * GYRO_ACCEL * dt;
         vel.y += accel.y * GYRO_ACCEL * dt;
@@ -437,40 +496,56 @@ export function GrokScene() {
 
     pet.style.pointerEvents = modeDesktop ? "none" : "auto";
     pet.addEventListener("pointerdown", onPetDown);
-    window.addEventListener("pointerdown", onFirstTouch);
     window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("deviceorientation", onOrientation);
     window.addEventListener("resize", onResize);
+    if (!modeDesktop && !needsMotionPrompt()) {
+      bindSensors();
+    }
     raf = requestAnimationFrame(tick);
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
       window.clearTimeout(blinkTimer);
+      enableMotionRef.current = null;
       pet.removeEventListener("pointerdown", onPetDown);
-      window.removeEventListener("pointerdown", onFirstTouch);
       window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("deviceorientation", onOrientation);
       window.removeEventListener("resize", onResize);
+      if (sensorsBound) unbindSensors();
     };
   }, [ready]);
 
   if (!ready) return null;
 
   return createPortal(
-    <div
-      ref={petRef}
-      className={`fixed top-0 left-0 z-[70] opacity-0 ${desktop ? "pointer-events-none" : "pointer-events-auto"}`}
-      aria-hidden
-    >
-      <GrokBot
-        size={size}
-        botRef={botRef}
-        faceRef={faceRef}
-        sphereRef={sphereRef}
-        eyesRef={eyesRef}
-      />
-    </div>,
+    <>
+      <div
+        ref={petRef}
+        className={`fixed top-0 left-0 z-[70] opacity-0 ${desktop ? "pointer-events-none" : "pointer-events-auto"}`}
+        aria-hidden
+      >
+        <GrokBot
+          size={size}
+          botRef={botRef}
+          faceRef={faceRef}
+          sphereRef={sphereRef}
+          eyesRef={eyesRef}
+        />
+      </div>
+      {needsTap ? (
+        <button
+          type="button"
+          className="fixed inset-0 z-[80] flex items-end justify-center bg-black/45 px-6 pb-16 text-center"
+          onClick={() => {
+            void enableMotionRef.current?.();
+          }}
+        >
+          <span className="rounded-full border border-white/20 bg-black/70 px-5 py-3 text-sm text-white">
+            Toca para mover a Grok
+          </span>
+        </button>
+      ) : null}
+    </>,
     document.body,
   );
 }
