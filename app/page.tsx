@@ -1,5 +1,4 @@
 import { GrokScene } from "@/components/GrokScene";
-import { PosterMarks } from "@/components/PosterMarks";
 import { QuickSocials } from "@/components/QuickSocials";
 import { ShareButton } from "@/components/ShareButton";
 import { SocialGrid } from "@/components/SocialGrid";
@@ -13,9 +12,8 @@ export default async function Home() {
 
   return (
     <div className="relative min-h-full bg-background">
-      <PosterMarks />
       <GrokScene />
-      <div className="absolute top-6 right-6 z-20 sm:top-8 sm:right-24">
+      <div className="absolute top-6 right-6 z-20 sm:top-8 sm:right-8">
         <ShareButton title={content.name} />
       </div>
 
