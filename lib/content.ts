@@ -6,6 +6,31 @@ import fallback from "@/data/content.json";
 
 const contentPath = path.join(process.cwd(), "data", "content.json");
 const CONTENT_BLOB = "site/content.json";
+const AMBASSADOR_ROLE = "Build Ambassador SpaceXSI";
+const WHATSAPP_COMMUNITY_HREF = "https://chat.whatsapp.com/EjedY8Yysb8Bhuevn1zsKV";
+
+function ensureProfileUpdates(content: SiteContent): SiteContent {
+  const headline = content.headline.includes(AMBASSADOR_ROLE)
+    ? content.headline
+    : `${content.headline}\n${AMBASSADOR_ROLE}`.replace(/^\n/, "");
+  const hasCommunity = content.links.some((link) => link.href === WHATSAPP_COMMUNITY_HREF);
+
+  return {
+    ...content,
+    headline,
+    links: hasCommunity
+      ? content.links
+      : [
+          ...content.links,
+          {
+            id: "whatsapp-community",
+            icon: "whatsapp",
+            label: "Comunidad de WhatsApp",
+            href: WHATSAPP_COMMUNITY_HREF,
+          },
+        ],
+  };
+}
 
 function canUseBlob() {
   return Boolean(
@@ -38,15 +63,15 @@ async function writeBlobContent(content: SiteContent) {
 export async function getContent(): Promise<SiteContent> {
   try {
     const fromBlob = await readBlobContent();
-    if (fromBlob) return fromBlob;
+    if (fromBlob) return ensureProfileUpdates(fromBlob);
   } catch {
     // fall through to the local file
   }
   try {
     const raw = await readFile(contentPath, "utf8");
-    return JSON.parse(raw) as SiteContent;
+    return ensureProfileUpdates(JSON.parse(raw) as SiteContent);
   } catch {
-    return fallback as SiteContent;
+    return ensureProfileUpdates(fallback as SiteContent);
   }
 }
 
