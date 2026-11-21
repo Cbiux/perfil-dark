@@ -1,6 +1,6 @@
 {
   "name": "Sebastián Ceciliano",
-  "headline": "Founder @Zeek\nBuild Ambassador SpaceXSI",
+  "headline": "Build Ambassador • SpaceXSI\nFounder • ZEEK",
   "handle": "cbiux",
   "photo": "/sebastian.jpg",
   "quickSocials": [
@@ -27,9 +27,7 @@
       "icon": "whatsapp",
       "label": "WhatsApp",
       "href": "https://api.whatsapp.com/send?phone=50684358038"
-    }
-  ],
-  "links": [
+    },
     {
       "id": "linkedin",
       "icon": "linkedin",
@@ -41,6 +39,14 @@
       "icon": "github",
       "label": "GitHub",
       "href": "https://github.com/Cbiux"
+    }
+  ],
+  "links": [
+    {
+      "id": "whatsapp-community",
+      "icon": "whatsapp",
+      "label": "SpaceXSI Community Costa Rica",
+      "href": "https://chat.whatsapp.com/EjedY8Yysb8Bhuevn1zsKV"
     },
     {
       "id": "zeek",
@@ -63,12 +69,6 @@
       "label": "Ayúdame a llegar a India",
       "subtitle": "Mi maleta",
       "href": "https://cbiux-suitcase.vercel.app"
-    },
-    {
-      "id": "whatsapp-community",
-      "icon": "whatsapp",
-      "label": "Comunidad de WhatsApp",
-      "href": "https://chat.whatsapp.com/EjedY8Yysb8Bhuevn1zsKV"
     }
   ]
 }

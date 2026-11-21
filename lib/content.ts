@@ -1,34 +1,63 @@
 import { list, put } from "@vercel/blob";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { SiteContent } from "./types";
+import type { ProfileLink, QuickSocial, SiteContent } from "./types";
 import fallback from "@/data/content.json";
 
 const contentPath = path.join(process.cwd(), "data", "content.json");
 const CONTENT_BLOB = "site/content.json";
-const AMBASSADOR_ROLE = "Build Ambassador SpaceXSI";
+const HEADLINE = "Build Ambassador • SpaceXSI\nFounder • ZEEK";
 const WHATSAPP_COMMUNITY_HREF = "https://chat.whatsapp.com/EjedY8Yysb8Bhuevn1zsKV";
+const WHATSAPP_COMMUNITY_LABEL = "SpaceXSI Community Costa Rica";
+const ICON_ROW: QuickSocial[] = [
+  {
+    id: "linkedin",
+    icon: "linkedin",
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/cbiux",
+  },
+  {
+    id: "github",
+    icon: "github",
+    label: "GitHub",
+    href: "https://github.com/Cbiux",
+  },
+];
+
+function isIconRowItem(item: { id: string; href: string }) {
+  return ICON_ROW.some((icon) => icon.id === item.id || icon.href === item.href);
+}
 
 function ensureProfileUpdates(content: SiteContent): SiteContent {
-  const headline = content.headline.includes(AMBASSADOR_ROLE)
-    ? content.headline
-    : `${content.headline}\n${AMBASSADOR_ROLE}`.replace(/^\n/, "");
-  const hasCommunity = content.links.some((link) => link.href === WHATSAPP_COMMUNITY_HREF);
+  const quickSocials = [...content.quickSocials];
+  for (const icon of ICON_ROW) {
+    const fromLinks = content.links.find((link) => link.id === icon.id || link.href === icon.href);
+    const entry: QuickSocial = fromLinks
+      ? { id: fromLinks.id, icon: fromLinks.icon, label: fromLinks.label, href: fromLinks.href }
+      : icon;
+    if (!quickSocials.some((social) => social.id === entry.id || social.href === entry.href)) {
+      quickSocials.push(entry);
+    }
+  }
+
+  const links = content.links.filter((link) => !isIconRowItem(link));
+  const communityIndex = links.findIndex((link) => link.href === WHATSAPP_COMMUNITY_HREF);
+  const community: ProfileLink =
+    communityIndex === -1
+      ? {
+          id: "whatsapp-community",
+          icon: "whatsapp",
+          label: WHATSAPP_COMMUNITY_LABEL,
+          href: WHATSAPP_COMMUNITY_HREF,
+        }
+      : { ...links[communityIndex], label: WHATSAPP_COMMUNITY_LABEL };
+  const rest = links.filter((link) => link.href !== WHATSAPP_COMMUNITY_HREF);
 
   return {
     ...content,
-    headline,
-    links: hasCommunity
-      ? content.links
-      : [
-          ...content.links,
-          {
-            id: "whatsapp-community",
-            icon: "whatsapp",
-            label: "Comunidad de WhatsApp",
-            href: WHATSAPP_COMMUNITY_HREF,
-          },
-        ],
+    headline: HEADLINE,
+    quickSocials,
+    links: [community, ...rest],
   };
 }
 
