@@ -24,7 +24,7 @@ export default async function Home() {
         <h1 className="mt-5 text-2xl font-semibold tracking-tight text-white sm:text-[28px]">
           {content.name}
         </h1>
-        <p className="mt-1 text-sm text-muted">{content.headline}</p>
+        <p className="mt-1 whitespace-pre-line text-sm text-muted">{content.headline}</p>
 
         <QuickSocials socials={content.quickSocials} />
         <SocialGrid links={content.links} />
